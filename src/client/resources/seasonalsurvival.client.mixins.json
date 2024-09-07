@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"package": "net.demomaker.seasonalsurvival.mixin.client",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"CreateWorldScreenMixin",
+		"CreateWorldScreenMixin$GameTabMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

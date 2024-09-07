@@ -1,0 +1,11 @@
+{
+	"required": true,
+	"package": "net.demomaker.seasonalsurvival.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"PreventSkipNightMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "seasonalsurvival",
+	"version": "${version}",
+	"name": "SeasonalSurvival",
+	"description": "This mod adds a seasonal aspect to survival. Create a new world with the seasonal checkbox enabled to see what it's about",
+	"authors": [
+		"Demomaker (Mike Bédard)"
+	],
+	"contact": {
+		"homepage": "",
+		"sources": "https://github.com/Demomaker/SeasonalSurvivalMCModFabric"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/seasonalsurvival/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.demomaker.seasonalsurvival.SeasonalSurvival"
+		],
+		"client": [
+			"net.demomaker.seasonalsurvival.SeasonalSurvivalClient"
+		],
+		"fabric-datagen": [
+			"net.demomaker.seasonalsurvival.SeasonalSurvivalDataGenerator"
+		]
+	},
+	"mixins": [
+		"seasonalsurvival.mixins.json",
+		{
+			"config": "seasonalsurvival.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.3",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
