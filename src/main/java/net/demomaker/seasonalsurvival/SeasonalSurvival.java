@@ -59,7 +59,6 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
-		LOGGER.info("Hello Fabric world!");
 		ServerLifecycleEvents.SERVER_STARTED.register(this);
 		ServerLifecycleEvents.SERVER_STOPPED.register(this);
 		ServerTickEvents.END_WORLD_TICK.register(this);

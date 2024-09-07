@@ -68,10 +68,12 @@ public class ModStateManager {
       String worldIdentifier = "world-" + server.getSaveProperties().getLevelName();
       if(json.has(worldIdentifier)) {
         JsonObject worldSettingsObject = json.getAsJsonObject(worldIdentifier);
-        seasonalSurvival.isWinter = worldSettingsObject.get("isWinter").getAsBoolean();
-        seasonalSurvival.isPlayingSeasonalSurvival = worldSettingsObject.get("useSeasonalSurvival").getAsBoolean();
+        SeasonalSurvival.isWinter = worldSettingsObject.get("isWinter").getAsBoolean();
+        SeasonalSurvival.isPlayingSeasonalSurvival = worldSettingsObject.get("useSeasonalSurvival").getAsBoolean();
       }
-      SeasonalSurvival.LOGGER.info(worldIdentifier + ", " + seasonalSurvival.isPlayingSeasonalSurvival);
+      SeasonalSurvival.LOGGER.info("Loaded seasonalSurvival settings for " + worldIdentifier + ", useSeasonalSurvival : " +
+          SeasonalSurvival.isPlayingSeasonalSurvival +
+          ", isWinter : " + SeasonalSurvival.isWinter);
       // Restore your mod state from the JSON object
     } catch (IOException e) {
       e.printStackTrace();

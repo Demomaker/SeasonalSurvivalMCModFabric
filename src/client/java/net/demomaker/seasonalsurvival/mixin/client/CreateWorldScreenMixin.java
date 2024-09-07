@@ -87,7 +87,6 @@ public class CreateWorldScreenMixin extends Screen implements ICreateWorldScreen
 
     @Inject(method = "<init>(Lnet/minecraft/client/gui/screen/world/CreateWorldScreen;)V", at = @At("TAIL"))
     public void GameTabConstructor(CreateWorldScreen this$0, CallbackInfo ci) {
-      SeasonalSurvival.LOGGER.info("create checkboxWidget");
       CheckboxWidget customCheckbox = CheckboxWidget
           .builder(Text.translatable("seasonalsurvival.checkbox"), ((ICreateWorldScreenMixin) this$0).getTextRenderer())
           .pos(0, 0)
