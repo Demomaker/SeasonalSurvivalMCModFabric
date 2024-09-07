@@ -1,6 +1,9 @@
 package net.demomaker.seasonalsurvival;
 
 import com.mojang.authlib.minecraft.client.MinecraftClient;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -10,11 +13,14 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerSt
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.predicate.entity.DamageSourcePredicate;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
@@ -26,6 +32,7 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.profiling.jfr.event.WorldLoadFinishedEvent;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.OceanRuinStructure.BiomeTemperature;
@@ -59,6 +66,11 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 		ServerWorldEvents.LOAD.register(this);
 		ServerWorldEvents.UNLOAD.register(this);
 		ServerPlayConnectionEvents.JOIN.register(this);
+		PayloadTypeRegistry.playC2S().register(MarkPlayerTranslationPayload.ID, MarkPlayerTranslationPayload.CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(MarkPlayerTranslationPayload.ID, (payload, context) -> {
+			ServerTextTranslator.markPlayerHasTranslation(context.player());
+		});
+
 	}
 
 	@Override
@@ -106,7 +118,7 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 	@Override
 	public void onPlayReady(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
 		if(isPlayingSeasonalSurvival && !isWinter) {
-			handler.player.sendMessage(Text.translatable("seasonalsurvival.playerJoin"));
+			handler.player.sendMessage(ServerTextTranslator.getTextFromTranslationKey("seasonalsurvival.playerJoin", handler.player));
 		}
 	}
 
@@ -125,15 +137,15 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 
 				float damage = 1.0F - (leatherArmorCount * 0.75F);
 				if (damage < 0) damage = 0;
-				if (damage > 0) player.sendMessage(Text.translatable("seasonalsurvival.coldPlayer"));
+				if (damage > 0) player.sendMessage(ServerTextTranslator.getTextFromTranslationKey("seasonalsurvival.coldPlayer", player));
 				player.damage(damageSources.freeze(), damage);
 			}
 		});
 	}
 
-	private void messagePlayers(ServerWorld world, Text text) {
+	private void messagePlayers(ServerWorld world, String key) {
 		world.getPlayers().forEach(player -> {
-			player.sendMessage(text);
+			player.sendMessage(ServerTextTranslator.getTextFromTranslationKey(key, player));
 		});
 	}
 
@@ -145,11 +157,11 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 		isWinter = !isWinter;
 		if(isWinter) {
 			startSnowing(world);
-			messagePlayers(world, Text.translatable("seasonalsurvival.winterStart"));
+			messagePlayers(world, "seasonalsurvival.winterStart");
 		}
 		else {
 			stopSnowing(world);
-			messagePlayers(world, Text.translatable("seasonalsurvival.winterEnd"));
+			messagePlayers(world, "seasonalsurvival.winterEnd");
 		}
 	}
 

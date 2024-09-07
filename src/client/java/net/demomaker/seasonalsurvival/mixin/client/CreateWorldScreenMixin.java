@@ -44,11 +44,10 @@ public class CreateWorldScreenMixin extends Screen implements ICreateWorldScreen
     super(title);
   }
 
-  @Inject(method = "startServer", at =@At("HEAD"))
+  @Inject(method = "startServer", at =@At("HEAD"), cancellable = true)
   private void saveWorldCreationSettings(LevelProperties.SpecialProperty specialProperty, CombinedDynamicRegistries<ServerDynamicRegistryType> combinedDynamicRegistries, Lifecycle lifecycle, CallbackInfo info) {
-    SeasonalSurvival.LOGGER.info("starting server...");
-
-    Optional<Session> optional = this.createSession();
+    showMessage(this.client, PREPARING_TEXT);
+    Optional<LevelStorage.Session> optional = this.createSession();
     if (!optional.isEmpty()) {
       this.clearDataPackTempDir();
       boolean bl = specialProperty == SpecialProperty.DEBUG;
@@ -58,6 +57,8 @@ public class CreateWorldScreenMixin extends Screen implements ICreateWorldScreen
       ClientModStateManager.saveWorldSettings(saveProperties.getLevelName(), ModObjects.seasonalSurvivalWorldSettings);
       this.client.createIntegratedServerLoader().startNewWorld((LevelStorage.Session)optional.get(), generatorOptionsHolder.dataPackContents(), combinedDynamicRegistries, saveProperties);
     }
+
+    info.cancel();
   }
 
   @Shadow

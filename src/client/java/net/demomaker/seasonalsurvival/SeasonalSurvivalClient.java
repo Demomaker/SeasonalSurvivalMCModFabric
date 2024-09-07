@@ -11,6 +11,14 @@ public class SeasonalSurvivalClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
+		ClientTextChecker.checkAndNotifyServer(
+				"seasonalsurvival.checkbox",
+				"seasonalsurvival.winterStart",
+				"seasonalsurvival.winterEnd",
+				"seasonalsurvival.winterNoSleep",
+				"seasonalsurvival.coldPlayer",
+				"seasonalsurvival.playerJoin"
+		);
 		ClientModStateManager.init();
 	}
 }
