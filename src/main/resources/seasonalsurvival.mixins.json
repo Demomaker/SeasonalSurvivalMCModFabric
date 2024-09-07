@@ -3,7 +3,9 @@
 	"package": "net.demomaker.seasonalsurvival.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"PreventSkipNightMixin"
+		"PreventSkipNightMixin",
+		"SnowMixin",
+		"SnowMixin$WeatherMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
