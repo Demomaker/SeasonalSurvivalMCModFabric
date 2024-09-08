@@ -5,7 +5,6 @@ import java.util.Optional;
 import net.demomaker.seasonalsurvival.ICreateWorldScreenMixin;
 import net.demomaker.seasonalsurvival.ModObjects;
 import net.demomaker.seasonalsurvival.ClientModStateManager;
-import net.demomaker.seasonalsurvival.SeasonalSurvival;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;

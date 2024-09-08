@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PreventSkipNightMixin {
   @Inject(method = "canResetTime", at = @At("HEAD"), cancellable = true)
   private void alertResetIsNotPossible(int percentage, List<ServerPlayerEntity> players, CallbackInfoReturnable<Boolean> cir) {
-    if(SeasonalSurvival.isWinter) {
+    if(SeasonalSurvival.isIsWinter()) {
       players.forEach(player -> player.sendMessage(ServerTextTranslator.getTextFromTranslationKey("seasonalsurvival.winterNoSleep", player)));
       cir.setReturnValue(false);
     }

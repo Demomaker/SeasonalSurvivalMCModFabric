@@ -3,6 +3,8 @@
 	"package": "net.demomaker.seasonalsurvival.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ClientSeeSnowMixin",
+		"ClientSeeSnowMixin$ClientWeatherMixin",
 		"CreateWorldScreenMixin",
 		"CreateWorldScreenMixin$GameTabMixin"
 	],

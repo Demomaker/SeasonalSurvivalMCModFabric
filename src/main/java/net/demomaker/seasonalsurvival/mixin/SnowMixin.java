@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class SnowMixin {
   @Inject(method = "getTemperature", at = @At("HEAD"), cancellable = true)
   private void snowOnly(BlockPos blockPos, CallbackInfoReturnable<Float> cir) {
-    if(SeasonalSurvival.isWinter) {
+    if(SeasonalSurvival.isIsWinter()) {
       cir.setReturnValue(0.01F);
     }
   }
@@ -21,7 +21,7 @@ public class SnowMixin {
   public static class WeatherMixin {
     @Inject(method = "downfall", at = @At("HEAD"), cancellable = true)
     private void showDownfall(CallbackInfoReturnable<Float> cir) {
-      if(SeasonalSurvival.isWinter) {
+      if(SeasonalSurvival.isIsWinter()) {
         cir.setReturnValue(1.0f);
       }
     }
@@ -29,7 +29,7 @@ public class SnowMixin {
     @Inject(method = "hasPrecipitation", at = @At("HEAD"), cancellable = true)
     private void injectHasPrecipitation(CallbackInfoReturnable<Boolean> cir) {
       // Add your condition for temporarily allowing rain particles
-      if (SeasonalSurvival.isWinter) {
+      if (SeasonalSurvival.isIsWinter()) {
         cir.setReturnValue(true); // Override the result to true to show precipitation
       }
     }
