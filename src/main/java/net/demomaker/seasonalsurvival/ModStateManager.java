@@ -37,12 +37,16 @@ public class ModStateManager {
     if (json.has(worldIdentifier)) {
       json.remove(worldIdentifier);
       worldSettingsObject.remove("isWinter");
+      if(worldSettingsObject.has("lastSeasonToggleTime")) {
+        worldSettingsObject.remove("lastSeasonToggleTime");
+      }
     }
     else {
       worldSettingsObject.addProperty("useSeasonalSurvival", true);
     }
 
     worldSettingsObject.addProperty("isWinter", seasonalSurvival.isWinter);
+    worldSettingsObject.addProperty("lastSeasonToggleTime", seasonalSurvival.lastSeasonToggleTime);
     json.add(worldIdentifier, worldSettingsObject);
 
 
@@ -70,6 +74,9 @@ public class ModStateManager {
         JsonObject worldSettingsObject = json.getAsJsonObject(worldIdentifier);
         SeasonalSurvival.isWinter = worldSettingsObject.get("isWinter").getAsBoolean();
         SeasonalSurvival.isPlayingSeasonalSurvival = worldSettingsObject.get("useSeasonalSurvival").getAsBoolean();
+        if(worldSettingsObject.has("lastSeasonToggleTime")) {
+          SeasonalSurvival.lastSeasonToggleTime = worldSettingsObject.get("lastSeasonToggleTime").getAsLong();
+        }
       }
       SeasonalSurvival.LOGGER.info("Loaded seasonalSurvival settings for " + worldIdentifier + ", useSeasonalSurvival : " +
           SeasonalSurvival.isPlayingSeasonalSurvival +

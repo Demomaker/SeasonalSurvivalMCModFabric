@@ -51,6 +51,7 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static boolean isWinter = false;
 	public static boolean isPlayingSeasonalSurvival = false;
+	public static long lastSeasonToggleTime = -1;
 	private DamageSources damageSources;
 
 	@Override
@@ -105,8 +106,13 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 		}
 		long worldTime = world.getTimeOfDay();
 
-		if (worldTime % TEN_DAYS_IN_TICKS == 0) {
+		if(lastSeasonToggleTime == -1) {
+			lastSeasonToggleTime = worldTime;
+		}
+
+		if (worldTime >= lastSeasonToggleTime + TEN_DAYS_IN_TICKS) {
 			toggleWinterSeason(world);
+			lastSeasonToggleTime = worldTime;
 		}
 
 		if (isWinter && worldTime % ONE_SECOND_IN_TICKS == 0) {
