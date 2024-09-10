@@ -6,7 +6,8 @@
 		"ClientSeeSnowMixin",
 		"ClientSeeSnowMixin$ClientWeatherMixin",
 		"CreateWorldScreenMixin",
-		"CreateWorldScreenMixin$GameTabMixin"
+		"CreateWorldScreenMixin$GameTabMixin",
+		"DeleteWorldMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

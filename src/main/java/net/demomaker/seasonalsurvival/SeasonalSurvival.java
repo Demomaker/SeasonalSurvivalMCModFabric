@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -32,26 +31,7 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	private static boolean isWinter = false;
-	public static boolean isPlayingSeasonalSurvival = false;
-	public static long lastSeasonToggleTime = -1;
-	private DamageSources damageSources;
-
-	public static boolean isIsWinter() {
-		return isWinter;
-	}
-
-	public static void setIsWinter(boolean isWinter) {
-		SeasonalSurvival.isWinter = isWinter;
-		if(isWinter) {
-			AlertWinterStartServerPayload alertWinterStartServerPayload = new AlertWinterStartServerPayload("");
-			ModServerObjects.server.getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, alertWinterStartServerPayload));
-		}
-		else {
-			AlertWinterEndServerPayload alertWinterEndServerPayload = new AlertWinterEndServerPayload("");
-			ModServerObjects.server.getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, alertWinterEndServerPayload));
-		}
-	}
+	private static DamageSources damageSources;
 
 	@Override
 	public void onInitialize() {
@@ -80,56 +60,68 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 
 	@Override
 	public void onServerStopped(MinecraftServer server) {
+		ModServerObjects.server = server;
 	}
 
 	@Override
 	public void onWorldLoad(MinecraftServer server, ServerWorld world) {
 		ModServerObjects.server = server;
-		this.damageSources = world.getDamageSources();
+		damageSources = world.getDamageSources();
 
-		ModStateManager.loadModState(world, this);
-		if(server instanceof MinecraftDedicatedServer) {
-			isPlayingSeasonalSurvival = true;
+		try {
+			ServerWorldSettingResolver.setWorldName(ServerUtil.getWorldName(server));
 		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		ModStateManager.loadModState();
 	}
 
 	@Override
 	public void onWorldUnload(MinecraftServer server, ServerWorld world) {
-		if(!isPlayingSeasonalSurvival) {
-			return;
+		ModServerObjects.server = server;
+		try {
+			ModStateManager.saveModState();
 		}
-		ModStateManager.saveModState(world, this);
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void onEndTick(ServerWorld world) {
-		if(!isPlayingSeasonalSurvival) {
+		if(ServerWorldSettingResolver.isNormalWorld()) {
 			return;
 		}
 		long worldTime = world.getTimeOfDay();
 
-		if(lastSeasonToggleTime == -1) {
-			lastSeasonToggleTime = worldTime;
+		if(ServerWorldSettingResolver.getLastSeasonToggleTime() == -1) {
+			ServerWorldSettingResolver.setLastSeasonToggleTime(worldTime);
 		}
 
-		if (worldTime >= lastSeasonToggleTime + TEN_DAYS_IN_TICKS) {
+		if (worldTime >= ServerWorldSettingResolver.getLastSeasonToggleTime() + TEN_DAYS_IN_TICKS) {
 			toggleWinterSeason(world);
-			lastSeasonToggleTime = worldTime;
+			ServerWorldSettingResolver.setLastSeasonToggleTime(worldTime);
 		}
 
-		if (isIsWinter() && worldTime % ONE_SECOND_IN_TICKS == 0) {
+		if (ServerWorldSettingResolver.isWinter() && worldTime % ONE_SECOND_IN_TICKS == 0) {
 			damagePlayersThatAreNotWarm(world);
 		}
 	}
 
 	@Override
 	public void onPlayReady(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
-		if(isPlayingSeasonalSurvival && !isIsWinter()) {
+		if(ServerWorldSettingResolver.isNormalWorld()) {
+			return;
+		}
+
+		if(!ServerWorldSettingResolver.isWinter()) {
 			handler.player.sendMessage(ServerTextTranslator.getTextFromTranslationKey("seasonalsurvival.playerJoin", handler.player));
 		}
 
 
-		if(isWinter) {
+		if(ServerWorldSettingResolver.isWinter()) {
 			AlertWinterStartServerPayload alertWinterStartServerPayload = new AlertWinterStartServerPayload("");
 			ServerPlayNetworking.send(handler.player, alertWinterStartServerPayload);
 		}
@@ -175,22 +167,27 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 	}
 
 	private void toggleWinterSeason(ServerWorld world) {
-		setIsWinter(!isIsWinter());
-		if(isIsWinter()) {
+		if(!ServerWorldSettingResolver.isWinter()) {
+			ServerWorldSettingResolver.startWinter();
 			startSnowing(world);
 			messagePlayers(world, "seasonalsurvival.winterStart");
 		}
 		else {
+			ServerWorldSettingResolver.endWinter();
 			stopSnowing(world);
 			messagePlayers(world, "seasonalsurvival.winterEnd");
 		}
 	}
 
 	private void startSnowing(ServerWorld world) {
+		AlertWinterStartServerPayload alertWinterStartServerPayload = new AlertWinterStartServerPayload("");
+		ModServerObjects.server.getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, alertWinterStartServerPayload));
 		world.setWeather(0, SNOW_TIME, true, true);
 	}
 
 	private void stopSnowing(ServerWorld world) {
+		AlertWinterEndServerPayload alertWinterEndServerPayload = new AlertWinterEndServerPayload("");
+		ModServerObjects.server.getPlayerManager().getPlayerList().forEach(player -> ServerPlayNetworking.send(player, alertWinterEndServerPayload));
 		world.setWeather(0, 0, false, false);
 	}
 }

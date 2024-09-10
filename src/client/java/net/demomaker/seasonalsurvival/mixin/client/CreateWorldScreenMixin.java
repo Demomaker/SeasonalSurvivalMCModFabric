@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.demomaker.seasonalsurvival.ICreateWorldScreenMixin;
 import net.demomaker.seasonalsurvival.ModObjects;
 import net.demomaker.seasonalsurvival.ClientModStateManager;
+import net.demomaker.seasonalsurvival.SeasonalSurvivalWorldSettings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
@@ -86,6 +87,7 @@ public class CreateWorldScreenMixin extends Screen implements ICreateWorldScreen
 
     @Inject(method = "<init>(Lnet/minecraft/client/gui/screen/world/CreateWorldScreen;)V", at = @At("TAIL"))
     public void GameTabConstructor(CreateWorldScreen this$0, CallbackInfo ci) {
+      ModObjects.seasonalSurvivalWorldSettings = new SeasonalSurvivalWorldSettings();
       CheckboxWidget customCheckbox = CheckboxWidget
           .builder(Text.translatable("seasonalsurvival.checkbox"), ((ICreateWorldScreenMixin) this$0).getTextRenderer())
           .pos(0, 0)

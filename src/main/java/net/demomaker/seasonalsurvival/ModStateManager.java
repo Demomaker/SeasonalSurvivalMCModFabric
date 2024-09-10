@@ -6,87 +6,88 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
+import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 
 public class ModStateManager {
 
   private static final Gson gson = new Gson();
   private static final File MOD_STATE_FILE = new File("seasonalsurvival_mod_state.json");
 
-  public static void saveModState(World world, SeasonalSurvival seasonalSurvival) {
+  public static void saveModState() throws Exception {
     JsonObject worldSettingsObject = new JsonObject();
-    JsonObject json = new JsonObject();
-    MinecraftServer server = world.getServer();
-    if(server == null) {
-      return;
-    }
-
-    String worldIdentifier = "world-" + server.getSaveProperties().getLevelName();
-
-    try (FileReader reader = new FileReader(MOD_STATE_FILE)) {
-      json = gson.fromJson(reader, JsonObject.class);
-      if(json.has(worldIdentifier)) {
-        worldSettingsObject = json.getAsJsonObject(worldIdentifier);
-      }
-      // Restore your mod state from the JSON object
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    JsonObject json = getExistingModStateFileJsonObject();
+    String worldIdentifier = ServerUtil.getWorldIdentifier(ModServerObjects.server);
 
     if (json.has(worldIdentifier)) {
       json.remove(worldIdentifier);
-      worldSettingsObject.remove("isWinter");
-      if(worldSettingsObject.has("lastSeasonToggleTime")) {
-        worldSettingsObject.remove("lastSeasonToggleTime");
-      }
-    }
-    else {
-      worldSettingsObject.addProperty("useSeasonalSurvival", true);
     }
 
-    worldSettingsObject.addProperty("isWinter", SeasonalSurvival.isIsWinter());
-    worldSettingsObject.addProperty("lastSeasonToggleTime", SeasonalSurvival.lastSeasonToggleTime);
+    boolean useSeasonalSurvival = !ServerWorldSettingResolver.isNormalWorld();
+    boolean isWinter = ServerWorldSettingResolver.isWinter();
+    long lastSeasonToggleTime = ServerWorldSettingResolver.getLastSeasonToggleTime();
+    SeasonalSurvival.LOGGER.info("Saving for worldIdentifier : " + worldIdentifier);
+    SeasonalSurvival.LOGGER.info("Saved SeasonalSurvival mod world with values. isWinter: " + isWinter + ", isSeasonal: " + useSeasonalSurvival + ", lastSeasonToggleTime: " + lastSeasonToggleTime);
+    worldSettingsObject.addProperty("useSeasonalSurvival", useSeasonalSurvival);
+    worldSettingsObject.addProperty("isWinter", isWinter);
+    worldSettingsObject.addProperty("lastSeasonToggleTime", lastSeasonToggleTime);
     json.add(worldIdentifier, worldSettingsObject);
 
 
     try (FileWriter writer = new FileWriter(MOD_STATE_FILE)) {
+      SeasonalSurvival.LOGGER.info("Writing : " + json.toString());
       gson.toJson(json, writer);
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
-  public static void loadModState(World world, SeasonalSurvival seasonalSurvival) {
-    if (!MOD_STATE_FILE.exists()) {
-      return; // No saved state to load
+  public static void loadModState() {
+    ModStateWorldSettingsDTO modStateWorldSettingsDTO = new ModStateWorldSettingsDTO(false, false, -1);
+    boolean modStateFileExists = MOD_STATE_FILE.exists();
+    if (!modStateFileExists) {
+      if(ModServerObjects.server instanceof MinecraftDedicatedServer) {
+        modStateWorldSettingsDTO.isSeasonal = true;
+      }
+    }
+    else {
+      readModStateFile(modStateWorldSettingsDTO);
+    }
+    ServerWorldSettingResolver.createFrom(modStateWorldSettingsDTO);
+  }
+
+  private static JsonObject getExistingModStateFileJsonObject() {
+    try (FileReader reader = new FileReader(MOD_STATE_FILE)) {
+      return gson.fromJson(reader, JsonObject.class);
+    }
+    catch (Exception e) {
+      e.printStackTrace();
     }
 
+    return new JsonObject();
+  }
+
+  private static void readModStateFile(ModStateWorldSettingsDTO modStateWorldSettingsDTO) {
     try (FileReader reader = new FileReader(MOD_STATE_FILE)) {
       JsonObject json = gson.fromJson(reader, JsonObject.class);
-      MinecraftServer server = world.getServer();
-      if(server == null) {
-        return;
-      }
-
-      String worldIdentifier = "world-" + server.getSaveProperties().getLevelName();
+      String worldIdentifier = ServerUtil.getWorldIdentifier(ModServerObjects.server);
+      SeasonalSurvival.LOGGER.info("Reading : " + json.toString());
+      SeasonalSurvival.LOGGER.info("Reading for worldIdentifier : " + worldIdentifier);
       if(json.has(worldIdentifier)) {
         JsonObject worldSettingsObject = json.getAsJsonObject(worldIdentifier);
-        SeasonalSurvival.setIsWinter(worldSettingsObject.get("isWinter").getAsBoolean());
-        SeasonalSurvival.isPlayingSeasonalSurvival = worldSettingsObject.get("useSeasonalSurvival").getAsBoolean();
-        if(worldSettingsObject.has("lastSeasonToggleTime")) {
-          SeasonalSurvival.lastSeasonToggleTime = worldSettingsObject.get("lastSeasonToggleTime").getAsLong();
+        if(worldSettingsObject.has("useSeasonalSurvival")) {
+          modStateWorldSettingsDTO.isSeasonal = worldSettingsObject.get("useSeasonalSurvival").getAsBoolean();
         }
-        else {
-          SeasonalSurvival.lastSeasonToggleTime = 0;
+        if(worldSettingsObject.has("isWinter")) {
+          modStateWorldSettingsDTO.isWinter = worldSettingsObject.get("isWinter").getAsBoolean();
+        }
+        if(worldSettingsObject.has("lastSeasonToggleTime")) {
+          modStateWorldSettingsDTO.lastSeasonToggleTime = worldSettingsObject.get("lastSeasonToggleTime").getAsLong();
         }
       }
-      SeasonalSurvival.LOGGER.info("Loaded seasonalSurvival settings for " + worldIdentifier + ", useSeasonalSurvival : " +
-          SeasonalSurvival.isPlayingSeasonalSurvival +
-          ", isWinter : " + SeasonalSurvival.isIsWinter());
-      // Restore your mod state from the JSON object
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (Exception e) {
+      //ignored
     }
   }
 }
