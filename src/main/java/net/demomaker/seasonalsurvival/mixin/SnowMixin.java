@@ -11,7 +11,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Biome.class)
 public class SnowMixin {
   @Inject(method = "getTemperature", at = @At("HEAD"), cancellable = true)
-  private void snowOnly(BlockPos blockPos, CallbackInfoReturnable<Float> cir) {
+  private void getTemperature(BlockPos blockPos, int seaLevel, CallbackInfoReturnable<Float> cir) {
+    winterTemperature(blockPos, seaLevel, cir);
+  }
+
+  @Inject(method = "computeTemperature", at = @At("HEAD"), cancellable = true)
+  private void computeTemperature(BlockPos blockPos, int seaLevel, CallbackInfoReturnable<Float> cir) {
+    winterTemperature(blockPos, seaLevel, cir);
+  }
+
+  private void winterTemperature(BlockPos blockPos, int seaLevel, CallbackInfoReturnable<Float> cir) {
     if(ServerWorldSettingResolver.isWinter()) {
       cir.setReturnValue(0.01F);
     }

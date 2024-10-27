@@ -1,6 +1,7 @@
 package net.demomaker.seasonalsurvival.mixin.client;
 
 import net.demomaker.seasonalsurvival.SeasonalSurvivalClient;
+import net.demomaker.seasonalsurvival.ServerWorldSettingResolver;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.util.math.BlockPos;
@@ -14,7 +15,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Biome.class)
 public class ClientSeeSnowMixin {
     @Inject(method = "getTemperature", at = @At("HEAD"), cancellable = true)
-    private void snowOnly(BlockPos blockPos, CallbackInfoReturnable<Float> cir) {
+    private void getTemperature(BlockPos blockPos, int seaLevel, CallbackInfoReturnable<Float> cir) {
+        winterTemperature(blockPos, seaLevel, cir);
+    }
+
+    @Inject(method = "computeTemperature", at = @At("HEAD"), cancellable = true)
+    private void computeTemperature(BlockPos blockPos, int seaLevel, CallbackInfoReturnable<Float> cir) {
+        winterTemperature(blockPos, seaLevel, cir);
+    }
+
+    private void winterTemperature(BlockPos blockPos, int seaLevel, CallbackInfoReturnable<Float> cir) {
         if(SeasonalSurvivalClient.isWinter()) {
             cir.setReturnValue(0.01F);
         }

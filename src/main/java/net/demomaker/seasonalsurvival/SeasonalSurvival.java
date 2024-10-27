@@ -147,7 +147,7 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 				float damage = 1.0F - (leatherArmorCount * 0.75F);
 				if (damage < 0) damage = 0;
 				if (damage > 0) player.sendMessage(ServerTextTranslator.getTextFromTranslationKey("seasonalsurvival.coldPlayer", player));
-				player.damage(damageSources.freeze(), damage);
+				player.damage(world, damageSources.freeze(), damage);
 			}
 		});
 	}
