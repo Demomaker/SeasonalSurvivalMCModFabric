@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -136,14 +137,7 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 		world.getPlayers().forEach(player -> {
 			if(player.isAlive() && isInOveworld(player) && !player.isCreative() && !player.isSpectator() && !isPlayerSheltered(world, player)) {
 				// Calculate the number of leather armor pieces
-				int leatherArmorCount = 0;
-
-				for (var armorItem : player.getArmorItems()) {
-					if (armorItem.getItem() == Items.LEATHER_CHESTPLATE) leatherArmorCount++;
-					if (armorItem.getItem() == Items.LEATHER_LEGGINGS) leatherArmorCount++;
-					if (armorItem.getItem() == Items.LEATHER_BOOTS) leatherArmorCount++;
-					if (armorItem.getItem() == Items.LEATHER_HELMET) leatherArmorCount++;
-				}
+				int leatherArmorCount = getLeatherArmourCount(player);
 
 				float damage = 1.0F - (leatherArmorCount * 0.75F);
 				if (damage < 0) damage = 0;
@@ -151,6 +145,22 @@ public class SeasonalSurvival implements ModInitializer, ServerStarted, ServerSt
 				player.damage(world, damageSources.freeze(), damage);
 			}
 		});
+	}
+
+	private int getLeatherArmourCount(ServerPlayerEntity player) {
+		int leatherArmorCount = 0;
+		for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
+			if(equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+				ItemStack armorItem = player.getEquippedStack(equipmentSlot);
+
+				if (armorItem.getItem() == Items.LEATHER_CHESTPLATE) leatherArmorCount++;
+				if (armorItem.getItem() == Items.LEATHER_LEGGINGS) leatherArmorCount++;
+				if (armorItem.getItem() == Items.LEATHER_BOOTS) leatherArmorCount++;
+				if (armorItem.getItem() == Items.LEATHER_HELMET) leatherArmorCount++;
+			}
+		}
+
+		return leatherArmorCount;
 	}
 
 	private boolean isInOveworld(ServerPlayerEntity player) {
