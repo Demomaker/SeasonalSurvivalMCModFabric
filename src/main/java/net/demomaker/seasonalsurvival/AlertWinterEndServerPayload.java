@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 public record AlertWinterEndServerPayload(String s) implements CustomPayload {
 
     public static final Identifier ALERT_WINTER_ENDED_ID = Identifier.of("alert_winter_ended");
-    public static final Id<AlertWinterEndServerPayload> ID = new Id<>(ALERT_WINTER_ENDED_ID);
+    public static final CustomPayload.Id<AlertWinterEndServerPayload> ID = new CustomPayload.Id<>(ALERT_WINTER_ENDED_ID);
     public static final PacketCodec<RegistryByteBuf, AlertWinterEndServerPayload> CODEC = PacketCodec.tuple(
             PacketCodecs.STRING,
             AlertWinterEndServerPayload::s,

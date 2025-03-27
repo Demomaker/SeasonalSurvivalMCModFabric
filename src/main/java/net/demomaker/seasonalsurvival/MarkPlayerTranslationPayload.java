@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 public record MarkPlayerTranslationPayload(String s) implements CustomPayload {
 
   public static final Identifier MARK_PLAYER_HAS_TRANSLATIONS_ID = Identifier.of("mark_player_has_translations");
-  public static final Id<MarkPlayerTranslationPayload> ID = new Id<>(MARK_PLAYER_HAS_TRANSLATIONS_ID);
+  public static final CustomPayload.Id<MarkPlayerTranslationPayload> ID = new CustomPayload.Id<>(MARK_PLAYER_HAS_TRANSLATIONS_ID);
   public static final PacketCodec<RegistryByteBuf, MarkPlayerTranslationPayload> CODEC = PacketCodec.tuple(
           PacketCodecs.STRING,
           MarkPlayerTranslationPayload::s,
